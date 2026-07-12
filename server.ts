@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import { authService } from "./server/services/authService.js";
 import { recipeService } from "./server/services/recipeService.js";
@@ -375,6 +374,7 @@ Fitur tambahan (prioritas):
   });
 
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
