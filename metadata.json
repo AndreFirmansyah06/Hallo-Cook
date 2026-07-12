@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Remix: HalloCook",
+  "description": "A premium warm futuristic cooking and recipe dashboard application with smart kitchen aesthetics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

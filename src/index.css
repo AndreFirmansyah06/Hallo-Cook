@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-serif: "Playfair Display", serif;
+
+  --color-brand-salmon: #FA8072;
+  --color-brand-coral: #FF7F50;
+  --color-brand-peach: #F4A896;
+  --color-deep-dark: #120F0D;
+  --color-warm-glow: #3D261F;
+}
+
+@layer base {
+  body {
+    @apply bg-deep-dark text-white font-sans antialiased overflow-x-hidden min-h-screen;
+    background: radial-gradient(circle at 70% 20%, var(--color-warm-glow) 0%, var(--color-deep-dark) 60%);
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+
+  .glass-dark {
+    @apply bg-black/40 backdrop-blur-2xl border border-white/5;
+  }
+
+  .text-glass {
+    @apply text-white/70;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
