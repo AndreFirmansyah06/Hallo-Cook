@@ -97,7 +97,9 @@ export default function Dashboard() {
       setRecipeFormData({
         ...item,
         ingredients: Array.isArray(item.ingredients) ? [...item.ingredients] : [''],
-        steps: Array.isArray(item.steps) ? [...item.steps] : ['']
+        steps: Array.isArray(item.steps) ? [...item.steps] : [''],
+        required_equipment: Array.isArray(item.required_equipment) ? [...item.required_equipment] : [''],
+        estimated_cost: item.estimated_cost !== undefined ? item.estimated_cost : ''
       });
     } else {
       setEditingRecipeId(null);
@@ -105,30 +107,33 @@ export default function Dashboard() {
         title: '',
         description: '',
         image_url: '',
+        video_url: '',
         difficulty: 'Medium',
         category: 'Local',
         chef_name: user?.username || 'HalloCook Chef',
         ingredients: [''],
         steps: [''],
+        required_equipment: [''],
         duration: '',
         servings: 1,
-        calories: 0
+        calories: 0,
+        estimated_cost: ''
       });
     }
     setShowRecipeModal(true);
   };
 
-  const handleRecipeArrayChange = (field: 'ingredients' | 'steps', index: number, value: string) => {
+  const handleRecipeArrayChange = (field: 'ingredients' | 'steps' | 'required_equipment', index: number, value: string) => {
     const newArray = [...(recipeFormData[field] || [])];
     newArray[index] = value;
     setRecipeFormData({ ...recipeFormData, [field]: newArray });
   };
 
-  const addRecipeArrayItem = (field: 'ingredients' | 'steps') => {
+  const addRecipeArrayItem = (field: 'ingredients' | 'steps' | 'required_equipment') => {
     setRecipeFormData({ ...recipeFormData, [field]: [...(recipeFormData[field] || []), ''] });
   };
 
-  const removeRecipeArrayItem = (field: 'ingredients' | 'steps', index: number) => {
+  const removeRecipeArrayItem = (field: 'ingredients' | 'steps' | 'required_equipment', index: number) => {
     const newArray = [...(recipeFormData[field] || [])];
     if (newArray.length <= 1) {
       newArray[0] = '';
@@ -146,6 +151,10 @@ export default function Dashboard() {
         userId: user!.id,
         ingredients: (recipeFormData.ingredients || []).filter((i: string) => i.trim() !== ''),
         steps: (recipeFormData.steps || []).filter((s: string) => s.trim() !== ''),
+        required_equipment: (recipeFormData.required_equipment || []).filter((eq: string) => eq.trim() !== ''),
+        estimated_cost: recipeFormData.estimated_cost !== '' ? Number(recipeFormData.estimated_cost) : undefined,
+        calories: recipeFormData.calories !== '' ? Number(recipeFormData.calories) : undefined,
+        servings: recipeFormData.servings !== '' ? Number(recipeFormData.servings) : undefined,
       };
 
       if (editingRecipeId) {
@@ -414,6 +423,10 @@ export default function Dashboard() {
                            <input type="text" value={recipeFormData.image_url || ''} onChange={e => setRecipeFormData({...recipeFormData, image_url: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                         </div>
                         <div className="space-y-2">
+                           <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Video Tutorial URL (YouTube / Direct MP4)</label>
+                           <input type="text" placeholder="e.g. https://www.youtube.com/watch?v=..." value={recipeFormData.video_url || ''} onChange={e => setRecipeFormData({...recipeFormData, video_url: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                        </div>
+                        <div className="space-y-2">
                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Complexity</label>
                            <select value={recipeFormData.difficulty || 'Medium'} onChange={e => setRecipeFormData({...recipeFormData, difficulty: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors">
                               <option value="Easy">Easy</option>
@@ -433,6 +446,10 @@ export default function Dashboard() {
                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Calories</label>
                            <input type="number" value={recipeFormData.calories || ''} onChange={e => setRecipeFormData({...recipeFormData, calories: parseInt(e.target.value) || 0})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                         </div>
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Maksimal Budget / Perkiraan Harga (Rp)</label>
+                           <input type="number" placeholder="e.g. 15000" value={recipeFormData.estimated_cost || ''} onChange={e => setRecipeFormData({...recipeFormData, estimated_cost: e.target.value !== '' ? parseInt(e.target.value) : ''})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                        </div>
                         <div className="md:col-span-2 space-y-4">
                            <div className="flex items-center justify-between">
                               <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Ingredients List</label>
@@ -451,6 +468,31 @@ export default function Dashboard() {
                                       className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-medium outline-none focus:border-brand-coral/50 transition-colors"
                                     />
                                     <button type="button" onClick={() => removeRecipeArrayItem('ingredients', i)} className="p-4 bg-white/5 border border-white/10 rounded-2xl text-white/20 hover:text-red-400 hover:border-red-400/50 transition-all cursor-pointer">
+                                       <Trash2 size={18} />
+                                    </button>
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
+
+                        <div className="md:col-span-2 space-y-4">
+                           <div className="flex items-center justify-between">
+                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Peralatan yang Diperlukan</label>
+                              <button type="button" onClick={() => addRecipeArrayItem('required_equipment')} className="text-[10px] font-black text-brand-coral uppercase tracking-widest flex items-center gap-2 hover:bg-white/5 px-4 py-2 rounded-xl transition-all cursor-pointer">
+                                 <Plus size={14} /> Add Equipment
+                              </button>
+                           </div>
+                           <div className="space-y-3">
+                              {(recipeFormData.required_equipment || []).map((eq: string, i: number) => (
+                                 <div key={i} className="flex gap-3">
+                                    <input 
+                                      type="text" 
+                                      value={eq} 
+                                      onChange={e => handleRecipeArrayChange('required_equipment', i, e.target.value)} 
+                                      placeholder={`Equipment #${i + 1} (e.g. Rice Cooker, Kompor)`}
+                                      className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-medium outline-none focus:border-brand-coral/50 transition-colors"
+                                    />
+                                    <button type="button" onClick={() => removeRecipeArrayItem('required_equipment', i)} className="p-4 bg-white/5 border border-white/10 rounded-2xl text-white/20 hover:text-red-400 hover:border-red-400/50 transition-all cursor-pointer">
                                        <Trash2 size={18} />
                                     </button>
                                  </div>
