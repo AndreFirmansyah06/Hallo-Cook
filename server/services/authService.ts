@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabase";
+import { supabase } from "../lib/supabase.js";
 import bcrypt from "bcryptjs";
 
 const adminEmails = ["admin@hallocook.com", "indomieseleramu1@gmail.com"];

@@ -2,9 +2,9 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
-import { authService } from "./server/services/authService";
-import { recipeService } from "./server/services/recipeService";
-import { userService } from "./server/services/userService";
+import { authService } from "./server/services/authService.js";
+import { recipeService } from "./server/services/recipeService.js";
+import { userService } from "./server/services/userService.js";
 
 let aiClient: any = null;
 function getGeminiClient() {
