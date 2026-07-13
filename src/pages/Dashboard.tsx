@@ -17,6 +17,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [recipeToRemove, setRecipeToRemove] = useState<string | null>(null);
+  const [showDeleteRecipeModal, setShowDeleteRecipeModal] = useState(false);
+  const [recipeIdToDelete, setRecipeIdToDelete] = useState<string | null>(null);
 
   // User Recipe Form States
   const [showRecipeModal, setShowRecipeModal] = useState(false);
@@ -109,7 +111,7 @@ export default function Dashboard() {
         image_url: '',
         video_url: '',
         difficulty: 'Medium',
-        category: 'Local',
+        category: 'Anak Kos',
         chef_name: user?.username || 'HalloCook Chef',
         ingredients: [''],
         steps: [''],
@@ -169,10 +171,17 @@ export default function Dashboard() {
     }
   };
 
-  const handleDeleteRecipe = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus resep ini?')) return;
+  const handleDeleteRecipe = (id: string) => {
+    setRecipeIdToDelete(id);
+    setShowDeleteRecipeModal(true);
+  };
+
+  const confirmDeleteRecipe = async () => {
+    if (!recipeIdToDelete) return;
     try {
-      await api.deleteRecipe(id);
+      await api.deleteRecipe(recipeIdToDelete);
+      setShowDeleteRecipeModal(false);
+      setRecipeIdToDelete(null);
       loadUserData();
     } catch (err: any) {
       alert(err.message);
@@ -243,7 +252,7 @@ export default function Dashboard() {
                          className="bg-gradient-to-r from-brand-salmon to-brand-coral text-white px-8 py-3.5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-2.5 shadow-2xl shadow-brand-salmon/20 hover:scale-105 transition-all active:scale-95 cursor-pointer"
                       >
                          <Plus size={14} strokeWidth={3} />
-                         Upload Resep
+                         Add Receipe
                       </button>
                    </div>
                    
@@ -380,6 +389,44 @@ export default function Dashboard() {
                 </motion.div>
              </div>
           )}
+
+          {showDeleteRecipeModal && (
+             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowDeleteRecipeModal(false)}
+                  className="absolute inset-0 bg-deep-dark/80 backdrop-blur-md"
+                />
+                <motion.div 
+                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                  className="glass relative w-full max-w-md p-10 rounded-[3rem] border-white/10 shadow-2xl text-center"
+                >
+                   <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
+                      <Trash2 className="text-red-400" size={32} />
+                   </div>
+                   <h4 className="text-3xl font-display font-black tracking-tighter mb-4">Hapus Resep?</h4>
+                   <p className="text-white/50 mb-10 font-medium font-sans">Apakah Anda yakin ingin menghapus resep ini secara permanen dari database?</p>
+                   <div className="flex flex-col gap-4">
+                      <button 
+                         onClick={confirmDeleteRecipe}
+                         className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-transform cursor-pointer"
+                      >
+                         Ya, Hapus Resep
+                      </button>
+                      <button 
+                         onClick={() => setShowDeleteRecipeModal(false)}
+                         className="w-full bg-white/5 text-white/50 py-5 rounded-2xl font-black text-xs uppercase tracking-widest border border-white/10 hover:bg-white/10 transition-all cursor-pointer"
+                      >
+                         Batalkan
+                      </button>
+                   </div>
+                </motion.div>
+             </div>
+          )}
        </AnimatePresence>
 
        {/* Modal System for Users to Upload / Edit Recipes */}
@@ -399,28 +446,28 @@ export default function Dashboard() {
                      <X size={24} />
                   </button>
 
-                  <div className="text-[10px] font-black text-brand-salmon uppercase tracking-[0.4em] mb-4">DATABASE PROTOCOL</div>
+                  <div className="text-[10px] font-black text-brand-salmon uppercase tracking-[0.4em] mb-4">HalloCook</div>
                   <h3 className="text-4xl font-display font-black text-white mb-10">
-                    {editingRecipeId ? 'Edit Resep Anda' : 'Upload Resep Baru'}
+                    {editingRecipeId ? 'Edit Your Receipe' : 'Add New Receipe'}
                   </h3>
 
                   <form onSubmit={handleRecipeSubmit} className="space-y-8">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Recipe Title</label>
-                           <input type="text" value={recipeFormData.title || ''} onChange={e => setRecipeFormData({...recipeFormData, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" required />
+                           <input type="text" placeholder="e.g. Indomie Carbonara Supreme" value={recipeFormData.title || ''} onChange={e => setRecipeFormData({...recipeFormData, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" required />
                         </div>
                         <div className="space-y-2">
                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Chef/Author</label>
-                           <input type="text" value={recipeFormData.chef_name || ''} onChange={e => setRecipeFormData({...recipeFormData, chef_name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                           <input type="text" placeholder="e.g. Gordon Ramsay" value={recipeFormData.chef_name || ''} onChange={e => setRecipeFormData({...recipeFormData, chef_name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                         </div>
                         <div className="md:col-span-2 space-y-2">
                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Summary / Story</label>
-                           <textarea value={recipeFormData.description || ''} onChange={e => setRecipeFormData({...recipeFormData, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-medium outline-none focus:border-brand-coral/50 transition-colors h-32" />
+                           <textarea placeholder="e.g. A quick, cheesy twist on instant noodles for late-night cravings..." value={recipeFormData.description || ''} onChange={e => setRecipeFormData({...recipeFormData, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-medium outline-none focus:border-brand-coral/50 transition-colors h-32" />
                         </div>
                         <div className="space-y-2">
                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Image URL</label>
-                           <input type="text" value={recipeFormData.image_url || ''} onChange={e => setRecipeFormData({...recipeFormData, image_url: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                           <input type="text" placeholder="e.g. https://images.unsplash.com/photo-1546069901-ba9599a7e63c" value={recipeFormData.image_url || ''} onChange={e => setRecipeFormData({...recipeFormData, image_url: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                         </div>
                         <div className="space-y-2">
                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Video Tutorial URL (YouTube / Direct MP4)</label>
@@ -428,27 +475,34 @@ export default function Dashboard() {
                         </div>
                         <div className="space-y-2">
                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Complexity</label>
-                           <select value={recipeFormData.difficulty || 'Medium'} onChange={e => setRecipeFormData({...recipeFormData, difficulty: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors">
-                              <option value="Easy">Easy</option>
-                              <option value="Medium">Medium</option>
-                              <option value="Hard">Hard</option>
+                           <select value={recipeFormData.difficulty || 'Medium'} onChange={e => setRecipeFormData({...recipeFormData, difficulty: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors cursor-pointer">
+                              <option value="Easy" className="bg-[#121214] text-white font-bold">Easy</option>
+                              <option value="Medium" className="bg-[#121214] text-white font-bold">Medium</option>
+                              <option value="Hard" className="bg-[#121214] text-white font-bold">Hard</option>
                            </select>
                         </div>
                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Prep Time (e.g. 30 mins)</label>
-                           <input type="text" value={recipeFormData.duration || ''} onChange={e => setRecipeFormData({...recipeFormData, duration: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                           <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Prep Time</label>
+                           <input type="text" placeholder="e.g. 15 mins" value={recipeFormData.duration || ''} onChange={e => setRecipeFormData({...recipeFormData, duration: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                         </div>
                         <div className="space-y-2">
                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Servings</label>
-                           <input type="number" value={recipeFormData.servings || ''} onChange={e => setRecipeFormData({...recipeFormData, servings: parseInt(e.target.value) || 1})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                           <input type="number" placeholder="e.g. 2" value={recipeFormData.servings || ''} onChange={e => setRecipeFormData({...recipeFormData, servings: parseInt(e.target.value) || 1})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                         </div>
                         <div className="space-y-2">
                            <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Calories</label>
-                           <input type="number" value={recipeFormData.calories || ''} onChange={e => setRecipeFormData({...recipeFormData, calories: parseInt(e.target.value) || 0})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                           <input type="number" placeholder="e.g. 450" value={recipeFormData.calories || ''} onChange={e => setRecipeFormData({...recipeFormData, calories: parseInt(e.target.value) || 0})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                         </div>
                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Maksimal Budget / Perkiraan Harga (Rp)</label>
+                           <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Maximum Budget / Estimated Price (IDR)</label>
                            <input type="number" placeholder="e.g. 15000" value={recipeFormData.estimated_cost || ''} onChange={e => setRecipeFormData({...recipeFormData, estimated_cost: e.target.value !== '' ? parseInt(e.target.value) : ''})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Menu Category</label>
+                           <select value={recipeFormData.category || 'Anak Kos'} onChange={e => setRecipeFormData({...recipeFormData, category: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors cursor-pointer">
+                              <option value="Anak Kos" className="bg-[#121214] text-white font-bold">Anak Kos (Student budget)</option>
+                              <option value="High Class" className="bg-[#121214] text-white font-bold">Mewah (Premium luxury)</option>
+                           </select>
                         </div>
                         <div className="md:col-span-2 space-y-4">
                            <div className="flex items-center justify-between">
@@ -464,7 +518,7 @@ export default function Dashboard() {
                                       type="text" 
                                       value={ing} 
                                       onChange={e => handleRecipeArrayChange('ingredients', i, e.target.value)} 
-                                      placeholder={`Ingredient #${i + 1}`}
+                                      placeholder={`e.g. Ingredient #${i + 1} (e.g. 2 eggs)`}
                                       className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-medium outline-none focus:border-brand-coral/50 transition-colors"
                                     />
                                     <button type="button" onClick={() => removeRecipeArrayItem('ingredients', i)} className="p-4 bg-white/5 border border-white/10 rounded-2xl text-white/20 hover:text-red-400 hover:border-red-400/50 transition-all cursor-pointer">
@@ -477,7 +531,7 @@ export default function Dashboard() {
 
                         <div className="md:col-span-2 space-y-4">
                            <div className="flex items-center justify-between">
-                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Peralatan yang Diperlukan</label>
+                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Required Equipment</label>
                               <button type="button" onClick={() => addRecipeArrayItem('required_equipment')} className="text-[10px] font-black text-brand-coral uppercase tracking-widest flex items-center gap-2 hover:bg-white/5 px-4 py-2 rounded-xl transition-all cursor-pointer">
                                  <Plus size={14} /> Add Equipment
                               </button>
@@ -489,7 +543,7 @@ export default function Dashboard() {
                                       type="text" 
                                       value={eq} 
                                       onChange={e => handleRecipeArrayChange('required_equipment', i, e.target.value)} 
-                                      placeholder={`Equipment #${i + 1} (e.g. Rice Cooker, Kompor)`}
+                                      placeholder={`e.g. Equipment #${i + 1} (e.g. Rice Cooker, Stove)`}
                                       className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-medium outline-none focus:border-brand-coral/50 transition-colors"
                                     />
                                     <button type="button" onClick={() => removeRecipeArrayItem('required_equipment', i)} className="p-4 bg-white/5 border border-white/10 rounded-2xl text-white/20 hover:text-red-400 hover:border-red-400/50 transition-all cursor-pointer">
@@ -529,7 +583,7 @@ export default function Dashboard() {
                      </div>
 
                      <button type="submit" className="w-full bg-gradient-to-r from-brand-salmon to-brand-coral text-white py-6 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-brand-salmon/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer">
-                        {editingRecipeId ? 'Execute Update' : 'Initialize Creation'}
+                        {editingRecipeId ? 'Update Recipe' : 'Add Recipe'}
                      </button>
                   </form>
                </motion.div>

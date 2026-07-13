@@ -5,12 +5,21 @@ export const recipeService = {
     if (!supabase) throw new Error("Supabase is not configured");
     const { data, error } = await supabase.from("recipes").select("*").order("created_at", { ascending: false });
     if (error) throw error;
-    return data || [];
+    return (data || []).map((r: any) => ({
+      ...r,
+      userId: r.user_id
+    }));
   },
   async getById(id: string) {
     if (!supabase) throw new Error("Supabase is not configured");
     const { data, error } = await supabase.from("recipes").select("*").eq("id", id).single();
     if (error) throw error;
+    if (data) {
+      return {
+        ...data,
+        userId: data.user_id
+      };
+    }
     return data;
   },
   async create(recipe: any) {
@@ -37,6 +46,12 @@ export const recipeService = {
     if (!supabase) throw new Error("Supabase is not configured");
     const { data, error } = await supabase.from("recipes").insert([recipeToInsert]).select().single();
     if (error) throw error;
+    if (data) {
+      return {
+        ...data,
+        userId: data.user_id
+      };
+    }
     return data;
   },
   async update(id: string, recipe: any) {
@@ -67,10 +82,22 @@ export const recipeService = {
     if (!supabase) throw new Error("Supabase is not configured");
     const { data, error } = await supabase.from("recipes").update(updatePayload).eq("id", id).select().single();
     if (error) throw error;
+    if (data) {
+      return {
+        ...data,
+        userId: data.user_id
+      };
+    }
     return data;
   },
   async delete(id: string) {
     if (!supabase) throw new Error("Supabase is not configured");
+    
+    // Manually delete references to prevent foreign key constraint violations
+    await supabase.from("favorites").delete().eq("recipe_id", id);
+    await supabase.from("shopping_list").delete().eq("recipe_id", id);
+    await supabase.from("cooking_sessions").delete().eq("recipe_id", id);
+
     const { error } = await supabase.from("recipes").delete().eq("id", id);
     if (error) throw error;
     return true;

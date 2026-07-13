@@ -20,6 +20,7 @@ export default function AdminDashboard() {
   const [modalType, setModalType] = useState<'recipe' | 'admin'>('recipe');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({});
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'recipe' | 'admin'; id: string } | null>(null);
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -136,14 +137,20 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDelete = async (type: 'recipe' | 'admin', id: string) => {
-    if (!confirm('Are you sure you want to delete this master record?')) return;
+  const handleDelete = (type: 'recipe' | 'admin', id: string) => {
+    setDeleteConfirm({ type, id });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
+    const { type, id } = deleteConfirm;
     try {
       if (type === 'recipe') {
         await api.deleteRecipe(id);
       } else {
         await api.deleteAdmin(id);
       }
+      setDeleteConfirm(null);
       loadData();
     } catch (err: any) {
       alert(err.message);
@@ -159,9 +166,9 @@ export default function AdminDashboard() {
               <div>
                   <div className="flex items-center gap-3 text-brand-salmon font-black text-[10px] tracking-[0.4em] uppercase mb-4">
                       <Database size={16} />
-                      Central Management Protocol 
+                      HalloCook
                   </div>
-                  <h1 className="text-5xl md:text-6xl font-display font-extrabold tracking-tighter">Kitchen HQ</h1>
+                  <h1 className="text-5xl md:text-6xl font-display font-extrabold tracking-tighter">HalloCook Admin</h1>
               </div>
               
               <div className="glass flex p-2 rounded-[2rem] border-white/5 shadow-xl self-start lg:self-auto">
@@ -216,8 +223,8 @@ export default function AdminDashboard() {
                      Welcome back to the HalloCook protocol. You have full oversight of the recipe engine and administrative privileges. Use your power wisely.
                   </p>
                   <div className="flex justify-center gap-6">
-                     <button onClick={() => setActiveSection('recipes')} className="px-10 py-5 bg-white text-deep-dark rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-2xl">Manage Catalog</button>
-                     <button onClick={() => setActiveSection('admins')} className="px-10 py-5 bg-white/5 border border-white/10 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all">Personnel Control</button>
+                     <button onClick={() => setActiveSection('recipes')} className="px-10 py-5 bg-white text-deep-dark rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-2xl">Manage Recipe/button>
+                     <button onClick={() => setActiveSection('admins')} className="px-10 py-5 bg-white/5 border border-white/10 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all">Manage Staff</button>
                   </div>
                </div>
             </motion.div>
@@ -226,13 +233,13 @@ export default function AdminDashboard() {
           {activeSection === 'recipes' && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                <div className="flex items-center justify-between mb-10 text-white">
-                  <h2 className="text-3xl font-display font-extrabold tracking-tight">Recipe Catalog</h2>
+                  <h2 className="text-3xl font-display font-extrabold tracking-tight">Recipe List</h2>
                   <button 
                     onClick={() => handleOpenModal('recipe')}
                     className="bg-gradient-to-r from-brand-salmon to-brand-coral text-white px-8 py-4 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 shadow-2xl shadow-brand-salmon/20 hover:scale-105 transition-all active:scale-95"
                   >
                      <Plus size={16} strokeWidth={3} />
-                     Commit Recipe
+                     Add Recipe
                   </button>
                </div>
 
@@ -374,9 +381,9 @@ export default function AdminDashboard() {
                      <X size={24} />
                   </button>
 
-                  <div className="text-[10px] font-black text-brand-salmon uppercase tracking-[0.4em] mb-4">DATABASE PROTOCOL</div>
+                  <div className="text-[10px] font-black text-brand-salmon uppercase tracking-[0.4em] mb-4">THalloCook</div>
                   <h3 className="text-4xl font-display font-black text-white mb-10">
-                    {editingId ? `Edit ${modalType === 'recipe' ? 'Recipe' : 'Admin'}` : `Deploy New ${modalType === 'recipe' ? 'Recipe' : 'Admin'}`}
+                    {editingId ? `Edit ${modalType === 'recipe' ? 'Recipe' : 'Admin'}` : `Add New ${modalType === 'recipe' ? 'Recipe' : 'Admin'}`}
                   </h3>
 
                   <form onSubmit={handleSubmit} className="space-y-8">
@@ -385,19 +392,19 @@ export default function AdminDashboard() {
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <div className="space-y-2">
                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Recipe Title</label>
-                             <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" required />
+                             <input type="text" placeholder="e.g. Indomie Carbonara Supreme" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" required />
                           </div>
                           <div className="space-y-2">
                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Chef/Author</label>
-                             <input type="text" value={formData.chef_name} onChange={e => setFormData({...formData, chef_name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                             <input type="text" placeholder="e.g. Gordon Ramsay" value={formData.chef_name} onChange={e => setFormData({...formData, chef_name: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                           </div>
                           <div className="md:col-span-2 space-y-2">
                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Summary / Story</label>
-                             <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-medium outline-none focus:border-brand-coral/50 transition-colors h-32" />
+                             <textarea placeholder="e.g. A quick, cheesy twist on instant noodles for late-night cravings..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-medium outline-none focus:border-brand-coral/50 transition-colors h-32" />
                           </div>
                           <div className="space-y-2">
                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Image URL</label>
-                             <input type="text" value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                             <input type="text" placeholder="e.g. https://images.unsplash.com/photo-..." value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                           </div>
                           <div className="space-y-2">
                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Video Tutorial URL (YouTube / Direct MP4)</label>
@@ -405,33 +412,33 @@ export default function AdminDashboard() {
                           </div>
                           <div className="space-y-2">
                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Complexity</label>
-                             <select value={formData.difficulty} onChange={e => setFormData({...formData, difficulty: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors">
-                                <option value="Easy">Easy</option>
-                                <option value="Medium">Medium</option>
-                                <option value="Hard">Hard</option>
+                             <select value={formData.difficulty} onChange={e => setFormData({...formData, difficulty: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors cursor-pointer">
+                                <option value="Easy" className="bg-[#121214] text-white font-bold">Easy</option>
+                                <option value="Medium" className="bg-[#121214] text-white font-bold">Medium</option>
+                                <option value="Hard" className="bg-[#121214] text-white font-bold">Hard</option>
                              </select>
                           </div>
                           <div className="space-y-2">
-                             <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Category</label>
-                              <select value={formData.category || 'Anak Kos'} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors">
-                                 <option value="Anak Kos">Anak Kos</option>
-                                 <option value="High Class">High Class</option>
+                             <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Menu Category</label>
+                              <select value={formData.category || 'Anak Kos'} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors cursor-pointer">
+                                 <option value="Anak Kos" className="bg-[#121214] text-white font-bold">Anak Kos (Student budget)</option>
+                                 <option value="High Class" className="bg-[#121214] text-white font-bold">Mewah (Premium luxury)</option>
                               </select>
                            </div>
                            <div className="space-y-2">
-                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Prep Time (e.g. 30 mins)</label>
-                             <input type="text" value={formData.duration || ''} onChange={e => setFormData({...formData, duration: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Prep Time</label>
+                             <input type="text" placeholder="e.g. 15 mins" value={formData.duration || ''} onChange={e => setFormData({...formData, duration: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                           </div>
                           <div className="space-y-2">
                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Servings</label>
-                             <input type="number" value={formData.servings || ''} onChange={e => setFormData({...formData, servings: parseInt(e.target.value)})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                             <input type="number" placeholder="e.g. 2" value={formData.servings || ''} onChange={e => setFormData({...formData, servings: parseInt(e.target.value)})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                           </div>
                           <div className="space-y-2">
                              <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Calories</label>
-                             <input type="number" value={formData.calories || ''} onChange={e => setFormData({...formData, calories: parseInt(e.target.value)})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
+                             <input type="number" placeholder="e.g. 450" value={formData.calories || ''} onChange={e => setFormData({...formData, calories: parseInt(e.target.value)})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                           </div>
                           <div className="space-y-2">
-                             <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Maksimal Budget / Perkiraan Harga (Rp)</label>
+                             <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Maximum Budget / Estimated Price (IDR)</label>
                              <input type="number" placeholder="e.g. 15000" value={formData.estimated_cost || ''} onChange={e => setFormData({...formData, estimated_cost: e.target.value !== '' ? parseInt(e.target.value) : ''})} className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold outline-none focus:border-brand-coral/50 transition-colors" />
                           </div>
                           <div className="md:col-span-2 space-y-4">
@@ -448,7 +455,7 @@ export default function AdminDashboard() {
                                         type="text" 
                                         value={ing} 
                                         onChange={e => handleArrayChange('ingredients', i, e.target.value)} 
-                                        placeholder={`Ingredient #${i + 1}`}
+                                        placeholder={`e.g. Ingredient #${i + 1} (e.g. 2 eggs)`}
                                         className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-medium outline-none focus:border-brand-coral/50 transition-colors"
                                       />
                                       <button type="button" onClick={() => removeArrayItem('ingredients', i)} className="p-4 bg-white/5 border border-white/10 rounded-2xl text-white/20 hover:text-red-400 hover:border-red-400/50 transition-all">
@@ -460,7 +467,7 @@ export default function AdminDashboard() {
                           </div>
                           <div className="md:col-span-2 space-y-4">
                              <div className="flex items-center justify-between">
-                                <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Peralatan yang Diperlukan</label>
+                                <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-2">Required Equipment</label>
                                 <button type="button" onClick={() => addArrayItem('required_equipment')} className="text-[10px] font-black text-brand-coral uppercase tracking-widest flex items-center gap-2 hover:bg-white/5 px-4 py-2 rounded-xl transition-all">
                                    <Plus size={14} /> Add Equipment
                                 </button>
@@ -472,7 +479,7 @@ export default function AdminDashboard() {
                                         type="text" 
                                         value={eq} 
                                         onChange={e => handleArrayChange('required_equipment', i, e.target.value)} 
-                                        placeholder={`Equipment #${i + 1} (e.g. Rice Cooker, Kompor)`}
+                                        placeholder={`e.g. Equipment #${i + 1} (e.g. Rice Cooker, Stove)`}
                                         className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-medium outline-none focus:border-brand-coral/50 transition-colors"
                                       />
                                       <button type="button" onClick={() => removeArrayItem('required_equipment', i)} className="p-4 bg-white/5 border border-white/10 rounded-2xl text-white/20 hover:text-red-400 hover:border-red-400/50 transition-all">
@@ -528,11 +535,51 @@ export default function AdminDashboard() {
                      )}
 
                      <button type="submit" className="w-full bg-gradient-to-r from-brand-salmon to-brand-coral text-white py-6 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-brand-salmon/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                        {editingId ? 'Execute Update' : 'Initialize Creation'}
+                        {editingId ? 'Update Recipe' : 'Add Recipe'}
                      </button>
                   </form>
                </motion.div>
             </div>
+          )}
+
+          {deleteConfirm && (
+             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setDeleteConfirm(null)}
+                  className="absolute inset-0 bg-deep-dark/80 backdrop-blur-md"
+                />
+                <motion.div 
+                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                  className="glass relative w-full max-w-md p-10 rounded-[3rem] border-white/10 shadow-2xl text-center"
+                >
+                   <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
+                      <Trash2 className="text-red-400" size={32} />
+                   </div>
+                   <h4 className="text-3xl font-display font-black tracking-tighter mb-4">Hapus Data?</h4>
+                   <p className="text-white/50 mb-10 font-medium font-sans">
+                      Apakah Anda yakin ingin menghapus {deleteConfirm.type === 'recipe' ? 'resep' : 'admin'} ini secara permanen dari database?
+                   </p>
+                   <div className="flex flex-col gap-4">
+                      <button 
+                         onClick={confirmDelete}
+                         className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-transform cursor-pointer"
+                      >
+                         Ya, Hapus Data
+                      </button>
+                      <button 
+                         onClick={() => setDeleteConfirm(null)}
+                         className="w-full bg-white/5 text-white/50 py-5 rounded-2xl font-black text-xs uppercase tracking-widest border border-white/10 hover:bg-white/10 transition-all cursor-pointer"
+                      >
+                         Batalkan
+                      </button>
+                   </div>
+                </motion.div>
+             </div>
           )}
        </AnimatePresence>
     </div>
