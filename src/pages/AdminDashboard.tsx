@@ -223,7 +223,7 @@ export default function AdminDashboard() {
                      Welcome back to the HalloCook protocol. You have full oversight of the recipe engine and administrative privileges. Use your power wisely.
                   </p>
                   <div className="flex justify-center gap-6">
-                     <button onClick={() => setActiveSection('recipes')} className="px-10 py-5 bg-white text-deep-dark rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-2xl">Manage Recipe/button>
+                     <button onClick={() => setActiveSection('recipes')} className="px-10 py-5 bg-white text-deep-dark rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-2xl">Manage Recipe</button>
                      <button onClick={() => setActiveSection('admins')} className="px-10 py-5 bg-white/5 border border-white/10 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all">Manage Staff</button>
                   </div>
                </div>
